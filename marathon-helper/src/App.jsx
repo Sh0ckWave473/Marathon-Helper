@@ -14,7 +14,10 @@ function App() {
             <header className="App-header">
                 <img src={reactLogo} className="App-logo" alt="React logo" />
                 <img src={viteLogo} className="App-logo vite" alt="Vite logo" />
-                <h1>Marathon Helper</h1>
+                <h1 className="text-4xl font-bold text-emerald-600">
+                    Marathon Helper
+                </h1>
+
                 <nav>
                     <Link to="/">Home</Link>
                     <Link to="/pacing">Pace Calculator</Link>

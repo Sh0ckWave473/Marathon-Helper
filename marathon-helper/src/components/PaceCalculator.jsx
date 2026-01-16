@@ -10,7 +10,7 @@ function PaceCalculator() {
     const [goalTimeMin, setGoalTimeMin] = useLocalStorage("goalTimeMin", "");
     const [goalTimeSec, setGoalTimeSec] = useLocalStorage("goalTimeSec", "");
 
-    const { goalTime, setGoalTime } = useRace();
+    const { goalTime, setGoalTime, setPaceInSeconds } = useRace();
 
     const [pace, setPace] = useState(null);
     const [error, setError] = useState(null);
@@ -24,6 +24,7 @@ function PaceCalculator() {
             return;
         }
         const paceInSeconds = totalSeconds / marathonDistance;
+        setPaceInSeconds(paceInSeconds);
         const paceMin = Math.floor(paceInSeconds / 60);
         const paceSec = Math.round(paceInSeconds % 60);
         setPace(`${paceMin}m ${paceSec}s per mile`);
@@ -50,7 +51,7 @@ function PaceCalculator() {
                         onChange={(e) => setGoalTimeHr(e.target.value)}
                     >
                         <option value="">--</option>
-                        {[...Array(6).keys()].map((hour) => (
+                        {[...Array(7).keys()].map((hour) => (
                             <option key={hour} value={hour}>
                                 {hour}
                             </option>

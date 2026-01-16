@@ -10,9 +10,21 @@ export function RaceProvider({ children }) {
 
     const [gelsPerHour, setGelsPerHour] = useLocalStorage("gelsPerHour", 2);
 
+    const [paceInSeconds, setPaceInSeconds] = useLocalStorage(
+        "paceInSeconds",
+        412
+    );
+
     return (
         <RaceContext.Provider
-            value={{ goalTime, setGoalTime, gelsPerHour, setGelsPerHour }}
+            value={{
+                goalTime,
+                setGoalTime,
+                gelsPerHour,
+                setGelsPerHour,
+                paceInSeconds,
+                setPaceInSeconds,
+            }}
         >
             {children}
         </RaceContext.Provider>
