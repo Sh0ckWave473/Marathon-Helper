@@ -15,6 +15,8 @@ export function RaceProvider({ children }) {
         412
     );
 
+    const [usingMiles, setUsingMiles] = useLocalStorage("usingMiles", true);
+
     return (
         <RaceContext.Provider
             value={{
@@ -24,6 +26,8 @@ export function RaceProvider({ children }) {
                 setGelsPerHour,
                 paceInSeconds,
                 setPaceInSeconds,
+                usingMiles,
+                setUsingMiles,
             }}
         >
             {children}

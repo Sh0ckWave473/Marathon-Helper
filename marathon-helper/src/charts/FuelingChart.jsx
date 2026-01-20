@@ -7,8 +7,10 @@ import {
     CartesianGrid,
     Tooltip,
     Legend,
+    ReferenceDot,
 } from "recharts";
 import { totalSecondsFromTime } from "../utils/TotalSecondsFromTime";
+import { secondsToTimeFormat } from "../utils/SecondsToTimeFormat.js";
 export default FuelingChart;
 
 // Produces a chart of the fueling plan over the marathon distance based on gels per hour.
@@ -33,19 +35,10 @@ function FuelingChart() {
     const paceInSeconds = totalSeconds / marathonDistance;
 
     const data = [];
-    for (let mile = 0; mile <= marathonDistance; mile++) {
-        const timeAtMile = paceInSeconds * mile;
-        const hours = Math.floor(timeAtMile / 3600);
-        const minutes = Math.floor((timeAtMile % 3600) / 60);
-        const seconds = Math.round(timeAtMile % 60);
-        const gelsTaken = Math.floor((timeAtMile / 3600) * gelsPerHour).toFixed(
-            2
-        );
-        data.push({
-            mile: mile.toFixed(1),
-            time: `${hours}h ${minutes}m ${seconds}s`,
-            gels: Number(gelsTaken),
-        });
+    for (let gelsTaken = 0; gelsTaken <= (totalSeconds / 3600) * gelsPerHour; gelsTaken++) {
+        const timeAtGel = (gelsTaken / gelsPerHour) * 3600;
+        const mileAtGel = timeAtGel / paceInSeconds;
+        data.push({ mile: mileAtGel.toFixed(1), gels: gelsTaken, time: secondsToTimeFormat(timeAtGel) });
     }
     return (
         <LineChart
@@ -56,22 +49,17 @@ function FuelingChart() {
         >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-                dataKey="mile"
-                label={{
-                    value: "Mile",
-                    position: "insideBottomRight",
-                }}
+                dataKey="time"
+                label={{ value: "Time", position: "insideBottomRight" }}
             />
             <YAxis
-                label={{
-                    value: "Gels Taken",
-                    angle: -90,
-                    position: "insideLeft",
-                }}
+                dataKey="gels"
+                domain={[0, "dataMax + 2"]}
+                label={{ value: "Gels Consumed", angle: -90, position: "insideLeft" }}
             />
-            <Tooltip />
+            <Tooltip formatter={(value) => [value, "Gels"]} />
             <Legend />
-            <Line dataKey="gels" stroke="#82ca9d" activeDot={{ r: 8 }} />
+            <Line dataKey="gels" stroke="#3b82f6" activeDot={{ r: 8 }} />
         </LineChart>
     );
 }

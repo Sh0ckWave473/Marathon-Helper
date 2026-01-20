@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocalStorage } from "../utils/useLocalStorage";
 import PaceChart from "../charts/PaceChart";
+import RoutePanel from "./RoutePanel.jsx";
 import { totalSecondsFromTime } from "../utils/TotalSecondsFromTime";
 import { useRace } from "../context/useRace.js";
 export default PaceCalculator;
@@ -100,6 +101,7 @@ function PaceCalculator() {
             ) : (
                 <p>Please enter your goal time to see your pace chart.</p>
             )}
+            <RoutePanel />
         </div>
     );
 }
