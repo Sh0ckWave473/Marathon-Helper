@@ -18,41 +18,66 @@ function FuelingCalculator() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        numberGelsPerHour(carbsPerGel);
+
+        const inputCarbsPerHour = Number(
+            document.getElementById("carbsPerHour").value,
+        );
+        const inputCarbsPerGel = Number(
+            document.getElementById("carbsPerGel").value,
+        );
+
+        if (
+            isNaN(inputCarbsPerHour) ||
+            isNaN(inputCarbsPerGel) ||
+            inputCarbsPerGel <= 0
+        ) {
+            return;
+        }
+
+        setCarbsPerHour(inputCarbsPerHour);
+        setCarbsPerGel(inputCarbsPerGel);
+        numberGelsPerHour(inputCarbsPerGel);
     };
 
     return (
-        <div>
+        <div className="p-4">
             <form onSubmit={handleSubmit}>
-                <label>
+                <label className="block m-1 font-medium text-lg">
                     Desired Carbs per Hour:
                     <input
+                        id="carbsPerHour"
+                        className="bg-gray-700 p-1 m-1"
                         type="number"
-                        value={carbsPerHour}
-                        onChange={(e) =>
-                            setCarbsPerHour(Number(e.target.value))
-                        }
+                        defaultValue={carbsPerHour}
                     />
                 </label>
                 <br />
-                <label>
+                <label className="block m-1 font-medium text-lg">
                     Carbs per Gel:
                     <input
+                        id="carbsPerGel"
+                        className="bg-gray-700 p-1 m-1"
                         type="number"
-                        value={carbsPerGel}
-                        onChange={(e) => setCarbsPerGel(Number(e.target.value))}
+                        defaultValue={carbsPerGel}
                     />
                 </label>
                 <br />
-                <button type="submit">Calculate Gels per Hour</button>
+                <button type="submit" className="m-1">
+                    Calculate Gels per Hour
+                </button>
             </form>
-            <h3>Estimated Fuel Needs:</h3>
-            <p>
-                Take 1 gel about every {(60 / gelsPerHour).toFixed(0)} minutes
-            </p>
-            <h3>Fueling Plan for Marathon:</h3>
             {goalTime && gelsPerHour ? (
                 <div>
+                    <h2 className="mt-4 font-semibold text-2xl">
+                        Estimated Fuel Needs:
+                    </h2>
+                    <p>
+                        Take 1 gel about every {(60 / gelsPerHour).toFixed(0)}{" "}
+                        minutes
+                    </p>
+                    <h2 className="mt-4 font-semibold text-2xl">
+                        Fueling Plan for Marathon:
+                    </h2>
                     <p>
                         For a goal time of {goalTime.hr}h {goalTime.min}m{" "}
                         {goalTime.sec}s, you will need approximately{" "}
@@ -66,10 +91,13 @@ function FuelingCalculator() {
                         This equates to about{" "}
                         {Math.ceil(
                             (totalSecondsFromTime(goalTime) / 3600) *
-                                gelsPerHour
+                                gelsPerHour,
                         ) - 1}{" "}
                         gels for the entire race
                     </p>
+                    <h2 className="mt-4 text-2xl font-medium">
+                        Time To Take Each Gel
+                    </h2>
                     <FuelingChart />
                 </div>
             ) : (

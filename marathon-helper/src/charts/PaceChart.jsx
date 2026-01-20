@@ -40,23 +40,30 @@ function PaceChart() {
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-                dataKey="mile"
-                
-            />
+            <XAxis dataKey="mile" />
             <YAxis
                 dataKey="paceInSeconds"
                 domain={["dataMin - 30", "dataMax + 30"]}
                 reversed
-                label={{ value: "Pace per mile", angle: -90, position: "insideLeft" }}
+                label={{
+                    value: "Pace per mile",
+                    angle: -90,
+                    position: "insideLeft",
+                }}
                 tickFormatter={(tick) => secondsToTimeFormat(tick)}
             />
-            <Tooltip 
-            formatter={(value) => {
-                return [secondsToTimeFormat(value), "Pace"];
-            }}/>
+            <Tooltip
+                formatter={(value) => {
+                    return [secondsToTimeFormat(value), "Pace"];
+                }}
+            />
             <Legend />
-            <Line dataKey="paceInSeconds" stroke="#ff3d3d" activeDot={{ r: 8 }} />
+            <Line
+                dataKey="paceInSeconds"
+                name="Pace"
+                stroke="#ff3d3d"
+                activeDot={{ r: 8 }}
+            />
         </LineChart>
     );
 }

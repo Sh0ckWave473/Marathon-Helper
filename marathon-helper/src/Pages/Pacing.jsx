@@ -5,7 +5,7 @@ export default Pacing;
 function Pacing() {
     return (
         <div>
-            <h2>Pace Calculator</h2>
+            <h2 className="text-4xl font-medium">Pace Calculator</h2>
             <PaceCalculator />
             <TipsPanel category="pacing" />
         </div>

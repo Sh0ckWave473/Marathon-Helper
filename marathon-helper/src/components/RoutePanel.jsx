@@ -45,13 +45,18 @@ function RoutePanel() {
     };
 
     return (
-        <div>
-            <h2>Route Panel</h2>
+        <div className="p-4">
+            <h2 className="text-2xl font-medium">Route Panel</h2>
             <p>
                 Input a .gpx file of your marathon race course so you can have
                 more personalized pacing strategies!
             </p>
-            <input type="file" accept=".gpx" onChange={handleFileUpload} />
+            <input
+                className="m-4 bg-gray-700 p-2 hover:bg-gray-600 hover:border rounded-md"
+                type="file"
+                accept=".gpx"
+                onChange={handleFileUpload}
+            />
         </div>
     );
 }

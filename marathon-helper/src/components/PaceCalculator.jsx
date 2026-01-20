@@ -4,6 +4,7 @@ import PaceChart from "../charts/PaceChart";
 import RoutePanel from "./RoutePanel.jsx";
 import { totalSecondsFromTime } from "../utils/TotalSecondsFromTime";
 import { useRace } from "../context/useRace.js";
+import { secondsToTimeFormat } from "../utils/SecondsToTimeFormat.js";
 export default PaceCalculator;
 
 function PaceCalculator() {
@@ -11,9 +12,9 @@ function PaceCalculator() {
     const [goalTimeMin, setGoalTimeMin] = useLocalStorage("goalTimeMin", "");
     const [goalTimeSec, setGoalTimeSec] = useLocalStorage("goalTimeSec", "");
 
-    const { goalTime, setGoalTime, setPaceInSeconds } = useRace();
+    const { goalTime, setGoalTime, paceInSeconds, setPaceInSeconds } =
+        useRace();
 
-    const [pace, setPace] = useState(null);
     const [error, setError] = useState(null);
     const marathonDistance = 26.2; // miles
 
@@ -21,14 +22,10 @@ function PaceCalculator() {
         const totalSeconds = totalSecondsFromTime(time);
         if (isNaN(totalSeconds) || totalSeconds <= 0) {
             setError("Please enter a valid goal time.");
-            setPace(null);
             return;
         }
         const paceInSeconds = totalSeconds / marathonDistance;
         setPaceInSeconds(paceInSeconds);
-        const paceMin = Math.floor(paceInSeconds / 60);
-        const paceSec = Math.round(paceInSeconds % 60);
-        setPace(`${paceMin}m ${paceSec}s per mile`);
         setGoalTime(time);
         setError(null);
     };
@@ -39,11 +36,13 @@ function PaceCalculator() {
     };
 
     return (
-        <div>
-            <h2>Marathon Pace Calculator</h2>
-            <form onSubmit={handleSubmit}>
+        <div className="p-4">
+            <h2 className="text-2xl font-medium">Marathon Pace Calculator</h2>
+            <form
+                className="m-4 space-x-1 font-medium text-lg"
+                onSubmit={handleSubmit}
+            >
                 <label>Goal Time:</label>
-                <br />
                 <label>
                     HH:
                     <select
@@ -90,12 +89,20 @@ function PaceCalculator() {
                     </select>
                 </label>
                 <br />
-                <button type="submit">Calculate Pace</button>
+                <button className="m-4" type="submit">
+                    Calculate Pace
+                </button>
             </form>
             {error && <p style={{ color: "red" }}>{error}</p>}
-            {pace ? (
+            {goalTime ? (
                 <div>
-                    <p>Your required pace: {pace}</p>
+                    <h2 className="text-2xl font-medium">
+                        Mile Pace For Each Mile
+                    </h2>
+                    <p>
+                        Your required average pace:{" "}
+                        {secondsToTimeFormat(paceInSeconds)}
+                    </p>
                     <PaceChart />
                 </div>
             ) : (
