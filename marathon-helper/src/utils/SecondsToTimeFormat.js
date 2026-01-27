@@ -6,7 +6,7 @@
 export function secondsToTimeFormat(seconds) {
     const hrs = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.round(seconds % 60);
+    const secs = Math.floor(seconds % 60);
     let timeString = "";
     if (hrs > 0) {
         timeString += `${hrs}:`;

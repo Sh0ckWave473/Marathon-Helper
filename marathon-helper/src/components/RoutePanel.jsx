@@ -1,54 +1,85 @@
+import { useState } from "react";
 import { RouteParser } from "../utils/RouteParser.js";
+import { useRace } from "../context/useRace.js";
+import { populateRouteData } from "../utils/PopulateRouteData.js";
+import { secondsToTimeFormat } from "../utils/SecondsToTimeFormat.js";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+} from "recharts";
 export default RoutePanel;
 
 function RoutePanel() {
-    // Haversine formula to calculate distance between two lat/lon points in meters
-    // Provided by ChatGPT
-    function haversineMeters(p1, p2) {
-        const R = 6371000; // Earth radius (meters)
-        const toRad = (d) => (d * Math.PI) / 180;
+    const { paceInSeconds } = useRace();
+    const [splits, setSplits] = useState([]);
 
-        const dLat = toRad(p2.lat - p1.lat);
-        const dLon = toRad(p2.lon - p1.lon);
-
-        const lat1 = toRad(p1.lat);
-        const lat2 = toRad(p2.lat);
-
-        const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-
-        return 2 * R * Math.asin(Math.sqrt(a));
-    }
-
-    function addDistance(points) {
-        let total = 0;
-
-        return points.map((p, i) => {
-            if (i > 0) {
-                total += haversineMeters(points[i - 1], p);
+    /**
+     * Generates a splits array with adjusted pace based on elevation changes and split distance.
+     * @param points Array of points with distanceMeters and elevation properties
+     * @param splitDistanceMeters distance between splits in meters
+     * @returns Array of splits with adjusted pace, distanceMeters, and elevationDelta
+     */
+    function getSplits(points, splitDistanceMeters) {
+        const splits = [];
+        let nextSplit = splitDistanceMeters;
+        let lastPoint = points[0];
+        let adjustedPace = paceInSeconds;
+        let totalSeconds = 0;
+        points.forEach((p) => {
+            if (p.distanceMeters >= nextSplit) {
+                const elevationDelta = p.elevation - lastPoint.elevation;
+                const grade =
+                    elevationDelta /
+                    (p.distanceMeters - lastPoint.distanceMeters);
+                // Simple adjustment: increase pace for uphill, decrease for downhill
+                if (grade > 0) {
+                    adjustedPace *= 1 + grade * 5;
+                } else {
+                    adjustedPace *= 1 + grade * 2;
+                }
+                splits.push({
+                    distanceMeters: p.distanceMeters,
+                    adjustedPace: adjustedPace,
+                    elevationDelta: elevationDelta,
+                    totalSeconds: (totalSeconds += adjustedPace),
+                });
+                adjustedPace = paceInSeconds; // reset to base pace for next split
+                nextSplit += splitDistanceMeters;
+                lastPoint = p;
             }
-
-            return {
-                ...p,
-                distanceMeters: total,
-            };
         });
+
+        return splits;
     }
 
     const handleFileUpload = async (e) => {
-        const file = e.target.files[0];
-        const text = await file.text();
-        const points = RouteParser(text);
-        const pointsWithDistance = addDistance(points);
-        console.log(pointsWithDistance);
+        try {
+            const file = e.target.files[0];
+            const text = await file.text();
+            const points = RouteParser(text);
+            const pointsWithDistanceAndGrade = populateRouteData(points);
+            console.log(
+                "Points with Distance and Grade:",
+                pointsWithDistanceAndGrade,
+            );
+            const newSplits = getSplits(pointsWithDistanceAndGrade, 1609.34); // 1 mile in meters
+            setSplits(newSplits);
+            console.log("Mile Splits with Adjusted Pace:", newSplits);
+        } catch (err) {
+            console.error(err.message);
+        }
     };
 
     return (
         <div className="p-4">
             <h2 className="text-2xl font-medium">Route Panel</h2>
             <p>
-                Input a .gpx file of your marathon race course so you can have
+                Upload a .gpx file of your marathon race course so you can have
                 more personalized pacing strategies!
             </p>
             <input
@@ -57,6 +88,50 @@ function RoutePanel() {
                 accept=".gpx"
                 onChange={handleFileUpload}
             />
+            {splits.length > 0 && (
+                // Here for now to visualize splits data
+                <LineChart
+                    width={600}
+                    height={300}
+                    data={splits}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                        dataKey="distanceMeters"
+                        label={{
+                            value: "Distance (miles)",
+                            position: "insideBottomRight",
+                            offset: 0,
+                        }}
+                        tickFormatter={(tick) => {
+                            return (tick / 1609.34).toFixed(1);
+                        }}
+                    />
+                    <YAxis
+                        label={{
+                            value: "Adjusted Pace",
+                            angle: -90,
+                            position: "insideLeft",
+                        }}
+                        domain={["dataMin - 30", "dataMax + 30"]}
+                        reversed
+                        tickFormatter={(tick) => secondsToTimeFormat(tick)}
+                    />
+                    <Tooltip
+                        formatter={(value) => {
+                            return [secondsToTimeFormat(value), "Pace"];
+                        }}
+                    />
+                    <Legend />
+                    <Line
+                        type="monotone"
+                        dataKey="adjustedPace"
+                        stroke="#8884d8"
+                        activeDot={{ r: 8 }}
+                    />
+                </LineChart>
+            )}
         </div>
     );
 }

@@ -42,25 +42,26 @@ function PaceCalculator() {
                 className="m-4 space-x-1 font-medium text-lg"
                 onSubmit={handleSubmit}
             >
-                <label>Goal Time:</label>
+                <label>Goal Time (HH:MM:SS):</label>
                 <label>
-                    HH:
                     <select
+                        className="m-2 p-1 bg-gray-700 rounded-md hover:bg-gray-600"
                         value={goalTimeHr}
                         defaultValue={goalTime.hours}
                         onChange={(e) => setGoalTimeHr(e.target.value)}
                     >
                         <option value="">--</option>
-                        {[...Array(7).keys()].map((hour) => (
+                        {[...Array(11).keys()].map((hour) => (
                             <option key={hour} value={hour}>
                                 {hour}
                             </option>
                         ))}
                     </select>
                 </label>
+                :
                 <label>
-                    MM:
                     <select
+                        className="m-2 p-1 bg-gray-700 rounded-md hover:bg-gray-600"
                         value={goalTimeMin}
                         defaultValue={goalTime.minutes}
                         onChange={(e) => setGoalTimeMin(e.target.value)}
@@ -73,9 +74,10 @@ function PaceCalculator() {
                         ))}
                     </select>
                 </label>
+                :
                 <label>
-                    SS:
                     <select
+                        className="m-2 p-1 bg-gray-700 rounded-md hover:bg-gray-600"
                         value={goalTimeSec}
                         defaultValue={goalTime.seconds}
                         onChange={(e) => setGoalTimeSec(e.target.value)}
