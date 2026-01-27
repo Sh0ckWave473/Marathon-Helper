@@ -44,6 +44,7 @@ function RoutePanel() {
                 }
                 splits.push({
                     distanceMeters: p.distanceMeters,
+                    basePace: paceInSeconds,
                     adjustedPace: adjustedPace,
                     elevationDelta: elevationDelta,
                     totalSeconds: (totalSeconds += adjustedPace),
@@ -110,7 +111,7 @@ function RoutePanel() {
                     />
                     <YAxis
                         label={{
-                            value: "Adjusted Pace",
+                            value: "Pace",
                             angle: -90,
                             position: "insideLeft",
                         }}
@@ -127,7 +128,13 @@ function RoutePanel() {
                     <Line
                         type="monotone"
                         dataKey="adjustedPace"
-                        stroke="#8884d8"
+                        stroke="#4747ff"
+                        activeDot={{ r: 8 }}
+                    />
+                    <Line
+                        type="monotone"
+                        dataKey="basePace"
+                        stroke="#ff3c3c"
                         activeDot={{ r: 8 }}
                     />
                 </LineChart>
