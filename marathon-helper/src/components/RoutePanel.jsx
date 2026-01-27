@@ -36,12 +36,9 @@ function RoutePanel() {
                 const grade =
                     elevationDelta /
                     (p.distanceMeters - lastPoint.distanceMeters);
-                // Simple adjustment: increase pace for uphill, decrease for downhill
-                if (grade > 0) {
-                    adjustedPace *= 1 + grade * 5;
-                } else {
-                    adjustedPace *= 1 + grade * 2;
-                }
+                // Simple adjustment: increase pace for uphill, decrease for downhill (Provided by ChatGPT)
+                adjustedPace *=
+                    1 + 0.035 * grade * 100 + 0.001 * Math.pow(grade * 100, 2);
                 splits.push({
                     distanceMeters: p.distanceMeters,
                     basePace: paceInSeconds,
