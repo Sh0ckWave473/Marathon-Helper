@@ -26,12 +26,21 @@ function RoutePanel() {
      */
     function getSplits(points, splitDistanceMeters) {
         const splits = [];
-        let nextSplit = splitDistanceMeters;
+        let nextSplit = 0;
         let lastPoint = points[0];
         let adjustedPace = paceInSeconds;
         let totalSeconds = 0;
         points.forEach((p) => {
-            if (p.distanceMeters >= nextSplit) {
+            if (nextSplit === 0) {
+                nextSplit += splitDistanceMeters;
+                splits.push({
+                    distanceMeters: 0,
+                    basePace: paceInSeconds,
+                    adjustedPace: paceInSeconds,
+                    elevationDelta: 0,
+                    totalSeconds: 0,
+                });
+            } else if (p.distanceMeters >= nextSplit) {
                 const elevationDelta = p.elevation - lastPoint.elevation;
                 const grade =
                     elevationDelta /
