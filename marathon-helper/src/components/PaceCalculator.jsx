@@ -97,7 +97,7 @@ function PaceCalculator() {
             </form>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {goalTime ? (
-                <div>
+                <div className="mt-8 flex items-center flex-col">
                     <h2 className="text-2xl font-medium">
                         Mile Pace For Each Mile
                     </h2>

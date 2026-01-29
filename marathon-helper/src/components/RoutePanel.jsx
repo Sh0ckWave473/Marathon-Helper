@@ -16,15 +16,18 @@ export default RoutePanel;
 
 function RoutePanel() {
     const { paceInSeconds } = useRace();
+    const [dataPoints, setDataPoints] = useState([]);
     const [splits, setSplits] = useState([]);
+    const [hillFactor, setHillFactor] = useState(1);
 
     /**
      * Generates a splits array with adjusted pace based on elevation changes and split distance.
      * @param points Array of points with distanceMeters and elevation properties
      * @param splitDistanceMeters distance between splits in meters
+     * @param hillFactor factor to adjust pace based on desired hill difficulty (default is 1)
      * @returns Array of splits with adjusted pace, distanceMeters, and elevationDelta
      */
-    function getSplits(points, splitDistanceMeters) {
+    function getSplits(points, splitDistanceMeters, hillFactor = 1) {
         const splits = [];
         let nextSplit = 0;
         let lastPoint = points[0];
@@ -45,9 +48,12 @@ function RoutePanel() {
                 const grade =
                     elevationDelta /
                     (p.distanceMeters - lastPoint.distanceMeters);
-                // Simple adjustment: increase pace for uphill, decrease for downhill (Provided by ChatGPT)
-                adjustedPace *=
-                    1 + 0.035 * grade * 100 + 0.001 * Math.pow(grade * 100, 2);
+                // Simple adjustment: increase pace for uphill, decrease for downhill
+                if (grade > 0) {
+                    adjustedPace *= 1 + grade * 4 * (4 - hillFactor) * (3 / 2); // uphill penalty
+                } else {
+                    adjustedPace *= 1 + grade * 2 * (4 - hillFactor) * 1; // downhill bonus
+                }
                 splits.push({
                     distanceMeters: p.distanceMeters,
                     basePace: paceInSeconds,
@@ -74,7 +80,12 @@ function RoutePanel() {
                 "Points with Distance and Grade:",
                 pointsWithDistanceAndGrade,
             );
-            const newSplits = getSplits(pointsWithDistanceAndGrade, 1609.34); // 1 mile in meters
+            const newSplits = getSplits(
+                pointsWithDistanceAndGrade,
+                1609.34,
+                hillFactor,
+            ); // 1 mile in meters
+            setDataPoints(pointsWithDistanceAndGrade);
             setSplits(newSplits);
             console.log("Mile Splits with Adjusted Pace:", newSplits);
         } catch (err) {
@@ -87,7 +98,8 @@ function RoutePanel() {
             <h2 className="text-2xl font-medium">Route Panel</h2>
             <p>
                 Upload a .gpx file of your marathon race course so you can have
-                more personalized pacing strategies!
+                more personalized pacing strategies! Also adjust how hard you
+                want to push on the hills.
             </p>
             <input
                 className="m-4 bg-gray-700 p-2 hover:bg-gray-600 hover:border rounded-md"
@@ -95,55 +107,118 @@ function RoutePanel() {
                 accept=".gpx"
                 onChange={handleFileUpload}
             />
+            <br />
+            <label className="m-4" htmlFor="hillFactor">
+                How hard do you want to push on the hills?
+            </label>
+            <select
+                className="m-4 bg-gray-700 p-2 hover:bg-gray-600 hover:border rounded-md"
+                onChange={(e) => setHillFactor(Number(e.target.value))}
+                value={hillFactor}
+            >
+                <option value="1">Easy Hills</option>
+                <option value="2">Moderate Hills</option>
+                <option value="3">Challenging Hills</option>
+            </select>
             {splits.length > 0 && (
                 // Here for now to visualize splits data
-                <LineChart
-                    width={600}
-                    height={300}
-                    data={splits}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                        dataKey="distanceMeters"
-                        label={{
-                            value: "Distance (miles)",
-                            position: "insideBottomRight",
-                            offset: 0,
-                        }}
-                        tickFormatter={(tick) => {
-                            return (tick / 1609.34).toFixed(1);
-                        }}
-                    />
-                    <YAxis
-                        label={{
-                            value: "Pace",
-                            angle: -90,
-                            position: "insideLeft",
-                        }}
-                        domain={["dataMin - 30", "dataMax + 30"]}
-                        reversed
-                        tickFormatter={(tick) => secondsToTimeFormat(tick)}
-                    />
-                    <Tooltip
-                        formatter={(value) => {
-                            return [secondsToTimeFormat(value), "Pace"];
-                        }}
-                    />
-                    <Legend />
-                    <Line
-                        type="monotone"
-                        dataKey="adjustedPace"
-                        stroke="#4747ff"
-                        activeDot={{ r: 8 }}
-                    />
-                    <Line
-                        type="monotone"
-                        dataKey="basePace"
-                        stroke="#ff3c3c"
-                        activeDot={{ r: 8 }}
-                    />
-                </LineChart>
+                <div className="mt-8 flex items-center flex-col">
+                    <h2 className="text-2xl font-medium">
+                        Pace per Mile based on Race Course:
+                    </h2>
+                    <LineChart
+                        className="mb-8"
+                        width={600}
+                        height={300}
+                        data={splits}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                            dataKey="distanceMeters"
+                            label={{
+                                value: "Distance (miles)",
+                                position: "insideBottomRight",
+                                offset: 0,
+                            }}
+                            tickFormatter={(tick) => {
+                                return (tick / 1609.34).toFixed(1);
+                            }}
+                        />
+                        <YAxis
+                            label={{
+                                value: "Pace",
+                                angle: -90,
+                                position: "insideLeft",
+                            }}
+                            domain={["dataMin - 30", "dataMax + 30"]}
+                            reversed
+                            tickFormatter={(tick) => secondsToTimeFormat(tick)}
+                        />
+                        <Tooltip
+                            formatter={(value) => {
+                                return [secondsToTimeFormat(value), "Pace"];
+                            }}
+                        />
+                        <Legend />
+                        <Line
+                            type="monotone"
+                            dataKey="adjustedPace"
+                            stroke="#4747ff"
+                            activeDot={{ stroke: "blue", r: 8 }}
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="basePace"
+                            stroke="#ff3c3c"
+                            activeDot={{ stroke: "red", r: 8 }}
+                        />
+                    </LineChart>
+                    {/* Here for now to visualize elevation data */}
+                    <h2 className="text-2xl font-medium">Elevation Graph:</h2>
+                    <LineChart
+                        className="mb-8"
+                        width={600}
+                        height={300}
+                        data={dataPoints}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                            dataKey="distanceMeters"
+                            label={{
+                                value: "Distance (miles)",
+                                position: "insideBottomRight",
+                                offset: 0,
+                            }}
+                            tickFormatter={(tick) => {
+                                return (tick / 1609.34).toFixed(1);
+                            }}
+                        />
+                        <YAxis
+                            label={{
+                                value: "Elevation (m)",
+                                angle: -90,
+                                position: "insideLeft",
+                            }}
+                            domain={["dataMin - 10", "dataMax + 10"]}
+                        />
+                        <Tooltip
+                            formatter={(value) => {
+                                return [value + " m", "Elevation"];
+                            }}
+                        />
+                        <Legend />
+                        <Line
+                            type="monotone"
+                            dataKey="elevation"
+                            stroke="#82ca9d"
+                            dot={false}
+                            fill="#8fc5a4"
+                            activeDot={{ stroke: "green", r: 8 }}
+                        />
+                    </LineChart>
+                </div>
             )}
         </div>
     );

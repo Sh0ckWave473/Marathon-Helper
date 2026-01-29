@@ -18,7 +18,9 @@ export function RouteParser(gpxText) {
             const lat = parseFloat(point.getAttribute("lat"));
             const lon = parseFloat(point.getAttribute("lon"));
             const eleElem = point.querySelector("ele");
-            const elevation = eleElem ? parseFloat(eleElem.textContent) : null;
+            const elevation = eleElem
+                ? parseFloat(eleElem.textContent).toFixed(1)
+                : null;
 
             points.push({ lat, lon, elevation });
         });
