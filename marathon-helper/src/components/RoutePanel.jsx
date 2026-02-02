@@ -12,7 +12,7 @@ import {
     Tooltip,
     Legend,
 } from "recharts";
-import { minettiGradeAdjustment } from "../utils/MinettiGradeAdjustment.js";
+import { gradeAdjustmentFormula } from "../utils/gradeAdjustmentFormula.js";
 export default RoutePanel;
 
 function RoutePanel() {
@@ -49,8 +49,12 @@ function RoutePanel() {
                     (p.distanceMeters - lastPoint.distanceMeters);
                 // Credit to Aaron Schroeder's implementation of Minetti's formula
                 // https://aaron-schroeder.github.io/reverse-engineering/grade-adjusted-pace.html
-                adjustedPace *=
-                    minettiGradeAdjustment(grade) / minettiGradeAdjustment(0);
+                let adjustmentFactor =
+                    gradeAdjustmentFormula(grade) / gradeAdjustmentFormula(0);
+                if (adjustmentFactor > 1)
+                    adjustmentFactor = 1 + (adjustmentFactor - 1) * 0.4; // reduce uphill impact
+                else adjustmentFactor = 1 - (1 - adjustmentFactor) * 0.4; // reduce downhill impact
+                adjustedPace *= adjustmentFactor;
                 splits.push({
                     distanceMeters: p.distanceMeters,
                     basePace: paceInSeconds,
