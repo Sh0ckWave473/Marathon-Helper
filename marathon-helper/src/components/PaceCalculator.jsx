@@ -12,7 +12,7 @@ function PaceCalculator() {
     const [goalTimeMin, setGoalTimeMin] = useLocalStorage("goalTimeMin", "");
     const [goalTimeSec, setGoalTimeSec] = useLocalStorage("goalTimeSec", "");
 
-    const { goalTime, setGoalTime, paceInSeconds, setPaceInSeconds } =
+    const { goalTimeInSeconds, setGoalTimeInSeconds, setPaceInSeconds } =
         useRace();
 
     const [error, setError] = useState(null);
@@ -26,7 +26,8 @@ function PaceCalculator() {
         }
         const paceInSeconds = totalSeconds / marathonDistance;
         setPaceInSeconds(paceInSeconds);
-        setGoalTime(time);
+        setGoalTimeInSeconds(totalSeconds);
+        console.log("Formatted Time:", secondsToTimeFormat(totalSeconds));
         setError(null);
     };
 
@@ -36,7 +37,8 @@ function PaceCalculator() {
     };
 
     return (
-        <div className="p-4">
+        <div className="p-4 mb-4">
+            <h2 className="text-4xl font-medium mb-4">Pace Calculator</h2>
             <h2 className="text-2xl font-medium">Marathon Pace Calculator</h2>
             <form
                 className="m-4 space-x-1 font-medium text-lg"
@@ -46,9 +48,14 @@ function PaceCalculator() {
                 <label>
                     <select
                         className="m-2 p-1 bg-gray-700 rounded-md hover:bg-gray-600"
-                        value={goalTimeHr}
-                        defaultValue={goalTime.hours}
-                        onChange={(e) => setGoalTimeHr(e.target.value)}
+                        defaultValue={parseInt(
+                            secondsToTimeFormat(goalTimeInSeconds).split(
+                                ":",
+                            )[0],
+                        )}
+                        onChange={(e) =>
+                            setGoalTimeHr(parseInt(e.target.value))
+                        }
                     >
                         <option value="">--</option>
                         {[...Array(11).keys()].map((hour) => (
@@ -62,9 +69,14 @@ function PaceCalculator() {
                 <label>
                     <select
                         className="m-2 p-1 bg-gray-700 rounded-md hover:bg-gray-600"
-                        value={goalTimeMin}
-                        defaultValue={goalTime.minutes}
-                        onChange={(e) => setGoalTimeMin(e.target.value)}
+                        defaultValue={parseInt(
+                            secondsToTimeFormat(goalTimeInSeconds).split(
+                                ":",
+                            )[1],
+                        )}
+                        onChange={(e) =>
+                            setGoalTimeMin(parseInt(e.target.value))
+                        }
                     >
                         <option value="">--</option>
                         {[...Array(60).keys()].map((minute) => (
@@ -78,9 +90,14 @@ function PaceCalculator() {
                 <label>
                     <select
                         className="m-2 p-1 bg-gray-700 rounded-md hover:bg-gray-600"
-                        value={goalTimeSec}
-                        defaultValue={goalTime.seconds}
-                        onChange={(e) => setGoalTimeSec(e.target.value)}
+                        defaultValue={parseInt(
+                            secondsToTimeFormat(goalTimeInSeconds).split(
+                                ":",
+                            )[2],
+                        )}
+                        onChange={(e) =>
+                            setGoalTimeSec(parseInt(e.target.value))
+                        }
                     >
                         <option value="">--</option>
                         {[...Array(60).keys()].map((second) => (
@@ -96,21 +113,6 @@ function PaceCalculator() {
                 </button>
             </form>
             {error && <p style={{ color: "red" }}>{error}</p>}
-            {goalTime ? (
-                <div className="mt-8 flex items-center flex-col">
-                    <h2 className="text-2xl font-medium">
-                        Mile Pace For Each Mile
-                    </h2>
-                    <p>
-                        Your required average pace:{" "}
-                        {secondsToTimeFormat(paceInSeconds)}
-                    </p>
-                    <PaceChart />
-                </div>
-            ) : (
-                <p>Please enter your goal time to see your pace chart.</p>
-            )}
-            <RoutePanel />
         </div>
     );
 }

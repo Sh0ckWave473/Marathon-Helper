@@ -51,11 +51,6 @@ function RoutePanel() {
                 // https://aaron-schroeder.github.io/reverse-engineering/grade-adjusted-pace.html
                 adjustedPace *=
                     minettiGradeAdjustment(grade) / minettiGradeAdjustment(0);
-                // if (grade > 0) {
-                //     adjustedPace *= 1 + grade * 4 * (4 - hillFactor) * (3 / 2); // uphill penalty
-                // } else {
-                //     adjustedPace *= 1 + grade * 2 * (4 - hillFactor) * 1; // downhill bonus
-                // }
                 splits.push({
                     distanceMeters: p.distanceMeters,
                     basePace: paceInSeconds,
@@ -93,7 +88,7 @@ function RoutePanel() {
 
     return (
         <div className="p-4">
-            <h2 className="text-2xl font-medium">Route Panel</h2>
+            <h2 className="text-4xl font-medium">Route Panel</h2>
             <p>
                 Upload a .gpx file of your marathon race course so you can have
                 more personalized pacing strategies!
@@ -105,12 +100,12 @@ function RoutePanel() {
                 onChange={handleFileUpload}
             />
             <br />
-            {splits.length > 0 && (
-                // Here to visualize splits data
-                <div className="mt-8 flex items-center flex-col">
-                    <h2 className="text-2xl font-medium">
-                        Pace per Mile based on Race Course:
-                    </h2>
+            <div className="mt-8 flex items-center flex-col">
+                <h2 className="text-2xl font-medium">
+                    Pace per Mile based on Race Course:
+                </h2>
+                {splits.length > 0 ? (
+                    // Here to visualize splits data
                     <LineChart
                         className="mb-8"
                         width={600}
@@ -159,8 +154,18 @@ function RoutePanel() {
                             activeDot={{ stroke: "red", r: 8 }}
                         />
                     </LineChart>
-                    {/* Here to visualize elevation data */}
-                    <h2 className="text-2xl font-medium">Elevation Graph:</h2>
+                ) : (
+                    <LineChart className="mb-8" width={600} height={300}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="distanceMeters" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                    </LineChart>
+                )}
+                <h2 className="text-2xl font-medium">Elevation Graph:</h2>
+                {dataPoints.length > 0 ? (
+                    // Here to visualize elevation data
                     <LineChart
                         className="mb-8"
                         width={600}
@@ -203,8 +208,16 @@ function RoutePanel() {
                             activeDot={{ stroke: "green", r: 8 }}
                         />
                     </LineChart>
-                </div>
-            )}
+                ) : (
+                    <LineChart className="mb-8" width={600} height={300}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="distanceMeters" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                    </LineChart>
+                )}
+            </div>
         </div>
     );
 }

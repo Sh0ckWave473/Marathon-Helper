@@ -2,17 +2,16 @@ import { RaceContext } from "./RaceContext";
 import { useLocalStorage } from "../utils/useLocalStorage";
 
 export function RaceProvider({ children }) {
-    const [goalTime, setGoalTime] = useLocalStorage("goalTime", {
-        hr: "3",
-        min: "0",
-        sec: "0",
-    });
+    const [goalTimeInSeconds, setGoalTimeInSeconds] = useLocalStorage(
+        "goalTime",
+        10800,
+    );
 
     const [gelsPerHour, setGelsPerHour] = useLocalStorage("gelsPerHour", 2);
 
     const [paceInSeconds, setPaceInSeconds] = useLocalStorage(
         "paceInSeconds",
-        412
+        412,
     );
 
     const [usingMiles, setUsingMiles] = useLocalStorage("usingMiles", true);
@@ -20,8 +19,8 @@ export function RaceProvider({ children }) {
     return (
         <RaceContext.Provider
             value={{
-                goalTime,
-                setGoalTime,
+                goalTimeInSeconds,
+                setGoalTimeInSeconds,
                 gelsPerHour,
                 setGelsPerHour,
                 paceInSeconds,

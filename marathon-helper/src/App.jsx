@@ -8,10 +8,20 @@ export default App;
 function App() {
     return (
         <div className="App min-h-screen">
-            <nav className="bg-gray-900 p-4 space-x-4 text-lg font-medium sticky top-0 z-10 flex justify-center">
-                <Link to="/">Home</Link>
-                <Link to="/pacing">Pace Calculator</Link>
-                <Link to="/fueling">Fueling Calculator</Link>
+            <nav className="bg-black p-4 space-x-4 text-lg font-medium sticky top-0 z-10 flex justify-center">
+                <Link to="/">
+                    <p className="text-white hover:text-red-600">Home</p>
+                </Link>
+                <Link to="/pacing">
+                    <p className="text-white hover:text-red-600">
+                        Pace Calculator
+                    </p>
+                </Link>
+                <Link to="/fueling">
+                    <p className="text-white hover:text-red-600">
+                        Fueling Calculator
+                    </p>
+                </Link>
             </nav>
             <header className="App-header">
                 <h1 className="text-4xl font-bold text-red-600 p-4">
