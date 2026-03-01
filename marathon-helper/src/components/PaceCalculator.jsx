@@ -12,11 +12,20 @@ function PaceCalculator() {
     const [goalTimeMin, setGoalTimeMin] = useLocalStorage("goalTimeMin", "");
     const [goalTimeSec, setGoalTimeSec] = useLocalStorage("goalTimeSec", "");
 
-    const { goalTimeInSeconds, setGoalTimeInSeconds, setPaceInSeconds } =
-        useRace();
+    const {
+        goalTimeInSeconds,
+        setGoalTimeInSeconds,
+        setPaceInSeconds,
+        usingImperial,
+    } = useRace();
 
     const [error, setError] = useState(null);
-    const marathonDistance = 26.2; // miles
+    let marathonDistance;
+    if (usingImperial) {
+        marathonDistance = 26.2; // miles
+    } else {
+        marathonDistance = 42.195; // kilometers
+    }
 
     const calculatePace = (time) => {
         const totalSeconds = totalSecondsFromTime(time);

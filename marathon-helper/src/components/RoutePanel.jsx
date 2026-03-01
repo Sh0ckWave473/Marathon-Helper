@@ -16,9 +16,10 @@ import { gradeAdjustmentFormula } from "../utils/gradeAdjustmentFormula.js";
 export default RoutePanel;
 
 function RoutePanel() {
-    const { paceInSeconds } = useRace();
+    const { paceInSeconds, setSplitPacesInSeconds, usingImperial } = useRace();
     const [dataPoints, setDataPoints] = useState([]);
     const [splits, setSplits] = useState([]);
+    const [elevationGain, setElevationGain] = useState(0);
 
     /**
      * Generates a splits array with adjusted pace based on elevation changes and split distance.
@@ -71,6 +72,19 @@ function RoutePanel() {
         return splits;
     }
 
+    /**
+     * Counts the total elevation gain from an array of points. Only positive elevation changes are counted.
+     * @param points Array of points with elevation properties
+     */
+    function getElevationGain(points) {
+        let elevationGain = 0;
+        for (let i = 1; i < points.length; i++) {
+            let elevationDelta = points[i].elevation - points[i - 1].elevation;
+            if (elevationDelta > 0) elevationGain += elevationDelta;
+        }
+        return elevationGain;
+    }
+
     const handleFileUpload = async (e) => {
         try {
             const file = e.target.files[0];
@@ -81,9 +95,18 @@ function RoutePanel() {
                 "Points with Distance and Grade:",
                 pointsWithDistanceAndGrade,
             );
-            const newSplits = getSplits(pointsWithDistanceAndGrade, 1609.34); // 1 mile in meters
+            let newSplits;
+            if (usingImperial) {
+                newSplits = getSplits(pointsWithDistanceAndGrade, 1609.34); // 1 mile in meters
+            } else {
+                newSplits = getSplits(pointsWithDistanceAndGrade, 1000); // 1 km in meters
+            }
             setDataPoints(pointsWithDistanceAndGrade);
             setSplits(newSplits);
+            setSplitPacesInSeconds(
+                newSplits.map((split) => split.adjustedPace),
+            );
+            setElevationGain(getElevationGain(pointsWithDistanceAndGrade));
             console.log("Mile Splits with Adjusted Pace:", newSplits);
         } catch (err) {
             console.error(err.message);
@@ -105,9 +128,15 @@ function RoutePanel() {
             />
             <br />
             <div className="mt-8 flex items-center flex-col">
-                <h2 className="text-2xl font-medium">
-                    Pace per Mile based on Race Course:
-                </h2>
+                {usingImperial ? (
+                    <h2 className="text-2xl font-medium">
+                        Mile Pace For Each Mile
+                    </h2>
+                ) : (
+                    <h2 className="text-2xl font-medium">
+                        Kilometer Pace For Each Kilometer
+                    </h2>
+                )}
                 {splits.length > 0 ? (
                     // Here to visualize splits data
                     <LineChart
@@ -118,17 +147,31 @@ function RoutePanel() {
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                            dataKey="distanceMeters"
-                            label={{
-                                value: "Distance (miles)",
-                                position: "insideBottomRight",
-                                offset: 0,
-                            }}
-                            tickFormatter={(tick) => {
-                                return (tick / 1609.34).toFixed(1);
-                            }}
-                        />
+                        {usingImperial ? (
+                            <XAxis
+                                dataKey="distanceMeters"
+                                label={{
+                                    value: "Distance (miles)",
+                                    position: "insideBottomRight",
+                                    offset: 0,
+                                }}
+                                tickFormatter={(tick) => {
+                                    return (tick / 1609.34).toFixed(1);
+                                }}
+                            />
+                        ) : (
+                            <XAxis
+                                dataKey="distanceMeters"
+                                label={{
+                                    value: "Distance (km)",
+                                    position: "insideBottomRight",
+                                    offset: 0,
+                                }}
+                                tickFormatter={(tick) => {
+                                    return (tick / 1000).toFixed(1);
+                                }}
+                            />
+                        )}
                         <YAxis
                             label={{
                                 value: "Pace",
@@ -168,6 +211,14 @@ function RoutePanel() {
                     </LineChart>
                 )}
                 <h2 className="text-2xl font-medium">Elevation Graph:</h2>
+                {usingImperial ? (
+                    <p>
+                        Elevation Gain: {(elevationGain * 3.28084).toFixed(0)}{" "}
+                        feet
+                    </p>
+                ) : (
+                    <p>Elevation Gain: {elevationGain.toFixed(0)} meters</p>
+                )}
                 {dataPoints.length > 0 ? (
                     // Here to visualize elevation data
                     <LineChart
@@ -178,30 +229,68 @@ function RoutePanel() {
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                            dataKey="distanceMeters"
-                            label={{
-                                value: "Distance (miles)",
-                                position: "insideBottomRight",
-                                offset: 0,
-                            }}
-                            tickFormatter={(tick) => {
-                                return (tick / 1609.34).toFixed(1);
-                            }}
-                        />
-                        <YAxis
-                            label={{
-                                value: "Elevation (m)",
-                                angle: -90,
-                                position: "insideLeft",
-                            }}
-                            domain={["dataMin - 10", "dataMax + 10"]}
-                        />
-                        <Tooltip
-                            formatter={(value) => {
-                                return [value + " m", "Elevation"];
-                            }}
-                        />
+                        {usingImperial ? (
+                            <div>
+                                <XAxis
+                                    dataKey="distanceMeters"
+                                    label={{
+                                        value: "Distance (miles)",
+                                        position: "insideBottomRight",
+                                        offset: 0,
+                                    }}
+                                    tickFormatter={(tick) => {
+                                        return (tick / 1609.34).toFixed(1);
+                                    }}
+                                />
+                                <YAxis
+                                    label={{
+                                        value: "Elevation (feet)",
+                                        angle: -90,
+                                        position: "insideLeft",
+                                    }}
+                                    domain={["dataMin - 10", "dataMax + 10"]}
+                                    tickFormatter={(tick) => {
+                                        return (tick * 3.28084).toFixed(0);
+                                    }}
+                                />
+                                <Tooltip
+                                    formatter={(value) => {
+                                        return [
+                                            (value * 3.28084).toFixed(0) +
+                                                " feet",
+                                            "Elevation",
+                                        ];
+                                    }}
+                                />
+                            </div>
+                        ) : (
+                            <div>
+                                <XAxis
+                                    dataKey="distanceMeters"
+                                    label={{
+                                        value: "Distance (km)",
+                                        position: "insideBottomRight",
+                                        offset: 0,
+                                    }}
+                                    tickFormatter={(tick) => {
+                                        return (tick / 1000).toFixed(1);
+                                    }}
+                                />
+                                <YAxis
+                                    label={{
+                                        value: "Elevation (m)",
+                                        angle: -90,
+                                        position: "insideLeft",
+                                    }}
+                                    domain={["dataMin - 10", "dataMax + 10"]}
+                                />
+                                <Tooltip
+                                    formatter={(value) => {
+                                        return [value + " m", "Elevation"];
+                                    }}
+                                />
+                            </div>
+                        )}
                         <Legend />
                         <Line
                             type="monotone"
